@@ -1,89 +1,65 @@
-# Trading-System
+# MTH9815 Trading System
 
- A scalable, extensible, and maintainable low-latency trading system framework designed under service-oriented architecture (SOA). 
+## Introduction
 
-## Service Architecture
+This bond trading system is specifically designed for US Treasury securities, focusing on 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, and 30Y bonds. The system is structured around a service-oriented architecture, leveraging specialized services and connectors for efficient data flow and processing.
 
-We give an example of a trading system for seven US Treasury securities, associated with real-time price and orderbook flows, data streaming, user inquiries, algorithm order execution, risk monitor, logging modules, etc.
+## System Overview
 
+The trading system is built on a robust Service-Oriented Architecture (SOA), leveraging a range of services and connectors to handle different aspects of bond trading. This architecture ensures modularity, scalability, and ease of maintenance.
 
+### Key Components:
 
-### Connector
+## Detailed System Components
 
-A connector is a component that flows data into trading system from connectivity source (e.g. a socket, database, etc). Connectors can be subscribe-only or publish-only, or both.
-A file connector (also an outbound connector) can both `Subscribe` and `Publish` data. It subscribes data from outside data source and publishes data to a socket with specified host and port. An inbound connector can then subscribes data from the socket and flows data into the trading system through calling `Service.OnMessage()`. It can also publish data to outside source using `Service.Publish()`.
+### Bond-Specific Services
 
+- **BondTradeBookingService**: Manages trade booking activities. It reads data from `trades.txt` and alternates trades between BUY and SELL for each security across different books (TRSY1, TRSY2, TRSY3).
+- **BondPositionService**: Calculates and tracks positions based on trades. It receives data from `BondTradeBookingService` via a `ServiceListener`.
+- **BondRiskService**: Assesses and manages the risk associated with bond positions. It is linked to `BondPositionService` and updates risk metrics based on position changes.
+- **BondPricingService**: Provides real-time pricing data for bonds, sourced from `prices.txt`. The service updates bond prices, oscillating between specified ranges, and reflects these changes in the system.
+- **BondMarketDataService**: Maintains and updates the order book for each bond. It processes data from `marketdata.txt`, ensuring accurate representation of market conditions.
+- **BondExecutionService**: Handles the execution of bond trades. It interacts with `BondAlgoExecutionService` for decision-making based on market data.
+- **BondStreamingService**: Manages streaming of bond prices and related information, using data from `BondAlgoStreamingService`.
+- **BondInquiryService**: Processes inquiries related to bond trades. It reads from `inquiries.txt`, responds to inquiries, and updates their status.
+- **BondHistoricalDataService**: Records historical data for various aspects of the trading system, including positions, risks, executions, and streams.
+- **BondAlgoExecutionService**: Automates the execution process by analyzing market data and deciding on the optimal timing and price for trade executions.
+- **BondAlgoStreamingService**: Facilitates automated streaming of bond prices, making decisions based on the current pricing data.
 
-### Data Flow
+### GUI Service
 
-External data flows into the trading system through connectors and service listeners:
+- **GUIService**: Provides a graphical interface for monitoring real-time bond price updates. It is throttled to manage data flow and prevent overload.
 
-1. price data -> pricing service -> algo streaming service -> streaming service -> historical data service
+### Data Handling and Formats
 
-2. price data -> pricing service -> GUI service -> GUI output
+- **Fractional Notation**: Bond prices are expressed in fractional notation, with precision up to 1/256th.
+- **Timestamps**: All output files feature timestamps with millisecond precision for accurate record-keeping.
 
-3. orderbook data -> market data service -> algo execution service -> execution service -> historical data service
+### IO Files
 
-4. execution service -> trade booking service -> position service -> risk service -> historical data service
+- **Data Files**: The system interacts with various data files like `prices.txt`, `trades.txt`, `marketdata.txt`, and `inquiries.txt`, each serving a specific purpose in the trading workflow.
+- **Output Files**: These include files like `positions.txt`, `risk.txt`, `executions.txt`, `streaming.txt`, and `allinquiries.txt`, which store historical data and other relevant information.
 
-5. trade data -> trade booking service -> position service -> risk service -> historical data service
+## Installation
 
-6. inquiry data -> inquiry service -> historical data service
+### Prerequisites:
 
+- UNIX environment
+- g++ version 7.x or greater
+- Makefile and CMake for compilation
 
+### Compilation:
 
-## Deployment
+1. Clone the repository to your local machine.
+2. Navigate to the project directory.
+3. Use CMake to set up the Makefile.
+4. Run `make` to compile the code.
 
-```bash
-# install boost and cmake tools
-sudo apt-get update
-sudo apt-get install libboost-all-dev
-sudo apt install cmake
+## Usage
 
-# compile and run executables
-mkdir build
-cd build
-cmake ..
-make
-./tradingsystem
-```
+1. Start the individual services by running the corresponding executables.
+2. Update market data by service communications. 
 
+## Contribution
 
-
-## Scripts
-
-- Core components
-  - `main`: main file that prepares trading system, set up interactions among services, and **start different service components simultaneously using multi-threading**
-  - `products`: define the class for the trading products, can be treasury bonds, interest rate swaps, future, commodity, or any user-defined product object
-  - `historicaldataservice`: a last-step service that listens to position service, risk service, execution service, streaming service, and inquiry service; persist objects it receives and saves the data into database (usually data centers, KDB database, etc)
-  - `utils`: time displayer, data generator, and risk calculator
-
-- Price data components
-
-  - `pricingservice`: read in price data from the socket to the system through an inbound connector
-
-  - `algostreamingservice`: listen to pricing service, flow in data of `Price<T>` and generate data of `AlgoStream<T>`  
-
-  - `streamingservice`: listen to algo streaming service, flow in data of `AlgoStream<T>` and record bid/ask prices into `priceStream<T>`, publish streams via socket in a separate process
-  - `guiservice`: a GUI component that listens to streaming prices that should be throttled with a 300 millisecond throttle., register a service listener on the pricing service and output the updates with a timestamp with millisecond precision to a file `gui.txt`.
-
-- Orderbook data components
-  - `marketdataservice`: read in orderbook data from the socket to the system through an inbound connector
-  - `algoexecutionservice`: listen to market data service, flow in data of `Orderbook<T>` and turn into execution data `AlgoExecution<T>`
-  - `executionservice`: listen to algo execution service, flow in data of `AlgoExecution<T>` and record order information into `ExecutionOrder<T>`, publish order executions via socket in a separate process
-- Trade data components
-  - `tradebookingservice`: read in trade data, listen to execution service at the same time, flow in `ExecutionOrder<T>` and turn in trade data of type `Trade<T>`
-  - `positionservice`: listen to trade booking service, flow in `Trade<T>` data and turn into `Position<T>`
-  - `riskservice`: listen to position service, flow in `Position<T>` data and calculate corresponding position risks, such as `PV01<T>`. 
-- Inquiry data components
-  - `inquiryservice`: read in user inquiry data, interact with connectors and deal with inquiries
-
-- Data and results
-
-  - `data`: data source for price data, orderbook updates, user inquiries, and trade data, can be replaced by other connectivity source (a database, socket, etc)
-
-  - `res`: results published by the system, including processed queries, executed orders, positions, risk monitor, data streaming, and GUI output.
-
-## Note
-
-The trading system is designed to be scalable, extensible, and maintainable. Multi-threading and asynchronous programming ensures low-latency, high-throughput, and high-performance. The system is also designed to be modularized, with each service component being independent and loosely coupled with others. New trading products can be added into `products.hpp`, new services, listeners, connectors can all be easily added and integrated into the whole system.
+This system has been developed as a part of the MTH 9815: Software Engineering for Finance course. Contributions and improvements are welcome, adhering to the coding standards and architectural design.
