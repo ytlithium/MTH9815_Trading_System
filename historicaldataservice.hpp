@@ -185,19 +185,19 @@ void HistoricalDataConnector<T>::Publish(T& data)
     switch (type)
     {
     case POSITION:
-        fileName = "../result/positions.txt";
+        fileName = "./result/positions.txt";
         break;
     case RISK:
-        fileName = "../result/risk.txt";
+        fileName = "./result/risk.txt";
         break;
     case EXECUTION:
-        fileName = "../result/executions.txt";
+        fileName = "./result/executions.txt";
         break;
     case STREAMING:
-        fileName = "../result/streaming.txt";
+        fileName = "./result/streaming.txt";
         break;
     case INQUIRY:
-        fileName = "../result/allinquiries.txt";
+        fileName = "./result/allinquiries.txt";
         break;
     default:
         break;
