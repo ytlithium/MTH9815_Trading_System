@@ -135,7 +135,18 @@ ostream& operator<<(ostream& output, const Inquiry<T>& inquiry)
     T product = inquiry.GetProduct();
     string productId = product.GetProductId();
 
-    string side = (inquiry.GetSide() == BID) ? "BID" : "OFFER";
+    Side side = inquiry.GetSide();
+    string _side;
+    switch (side)
+    {
+     case BID:
+      _side = "BID";
+      break;
+     case OFFER:
+     _side = "OFFER";
+      break;
+    }
+
     long quantity = inquiry.GetQuantity();
     double price = inquiry.GetPrice();
 
@@ -159,7 +170,7 @@ ostream& operator<<(ostream& output, const Inquiry<T>& inquiry)
         break;
     }
 
-    output << inquiryId << "," << productId << "," << side << ","
+    output << inquiryId << "," << productId << "," << _side << ","
         << quantity << "," << Price2Frac(price) << "," << state;
 
     return output;
