@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # If on windows, uncomment and set the path to the boost library
-set(CMAKE_PREFIX_PATH ""C:\Users\Chemi\OneDrive\Desktop\Work\boost_1_83_0"")
+set(CMAKE_PREFIX_PATH "C:\Users\Chemi\OneDrive\Desktop\Work\boost_1_83_0")
 
 # Find the Boost library
 find_package(Boost REQUIRED)
