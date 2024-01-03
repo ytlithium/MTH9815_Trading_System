@@ -54,7 +54,7 @@ int main(){
 	// ----- Data Generation -----
 	log(LogLevel::INFO, "Generating price and orderbook data...");
 	vector<string> bonds = { "9128283H1", "9128283L2", "912828M80", "9128283J7", "9128283F5", "912810TW8", "912810RZ3" };
-	genOrderBook(bonds, pricePath, marketDataPath, 39373, 100,0000);
+	genOrderBook(bonds, pricePath, marketDataPath, 39373, 1000000);
 	genTrades(bonds, tradePath, 39373);
 	genInquiries(bonds, inquiryPath, 39373);
 	log(LogLevel::INFO, "Data generation complete.");
