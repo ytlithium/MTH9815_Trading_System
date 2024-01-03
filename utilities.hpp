@@ -39,8 +39,7 @@ std::string getTime()
     time_t now_c = system_clock::to_time_t(now);
 
     // Use localtime_s for secure conversion
-    tm now_tm;
-    localtime_s(&now_tm, &now_c);
+    tm now_tm = *localtime(&now_c);
 
     // Extract milliseconds
     auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
@@ -61,8 +60,7 @@ std::string getTime(std::chrono::system_clock::time_point now)
     time_t now_c = system_clock::to_time_t(now);
 
     // Use localtime_s for secure conversion
-    tm now_tm;
-    localtime_s(&now_tm, &now_c);
+    tm now_tm = *localtime(&now_c);
 
     // Extract milliseconds
     auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
